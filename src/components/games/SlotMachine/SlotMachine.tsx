@@ -5,19 +5,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useSlotMachine } from '@/hooks/useSlotMachine';
 
 import { Reel } from './_Reel';
+import ParticipantList from './_ParticipantList';
 import {
-  addBtnClass,
   cabinetClass,
-  chipClass,
-  chipXClass,
   controlRowClass,
   dotClass,
   dotGroupClass,
   fullscreenBtnClass,
   gameZoneClass,
   gameZoneInnerClass,
-  inputClass,
-  participantsLabelClass,
   reelsAreaClass,
   spinBtnClass,
 } from './SlotMachine.styles';
@@ -87,8 +83,17 @@ const SlotMachine = () => {
               isSpinning={isSpinning}
               winner={winner}
             />
-
           </div>
+          <ParticipantList
+            names={names}
+            winner={winner}
+            input={input}
+            setInput={setInput}
+            isDuplicate={isDuplicate}
+            isSpinning={isSpinning}
+            addName={addName}
+            removeName={removeName}
+          />
 
           <div className={controlRowClass}>
             <button
@@ -97,55 +102,10 @@ const SlotMachine = () => {
               disabled={!canSpin}
               aria-label="슬롯 돌리기"
             >
-              {isSpinning ? 'SPINNING…' : 'SPIN'}
+              {isSpinning ? 'PUSH…' : 'PUSH'}
             </button>
           </div>
         </div>
-
-        <div className="flex gap-2">
-          <input
-            className={inputClass(isDuplicate)}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addName()}
-            placeholder="이름 입력 후 Enter"
-            disabled={isSpinning}
-            maxLength={12}
-            aria-label="참여자 이름 입력"
-          />
-          <button
-            className={addBtnClass}
-            onClick={addName}
-            disabled={isSpinning || !input.trim()}
-            aria-label="참여자 추가"
-          >
-            +
-          </button>
-        </div>
-
-        {names.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <div className={participantsLabelClass}>
-              참여자 {names.length}명
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {names.map((name) => (
-                <div key={name} className={chipClass(name === winner)}>
-                  <span>{name}</span>
-                  {!isSpinning && (
-                    <button
-                      onClick={() => removeName(name)}
-                      className={chipXClass}
-                      aria-label={`${name} 삭제`}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

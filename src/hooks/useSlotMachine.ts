@@ -39,7 +39,7 @@ export const useSlotMachine = () => {
     const startPos = scrollPos;
     const currentOffset = startPos % totalH;
     const winnerOffset = pickedIdx * REEL_ITEM_H;
-    const distToWinner = ((winnerOffset - currentOffset) + totalH) % totalH;
+    const distToWinner = (winnerOffset - currentOffset + totalH) % totalH;
     // 6 full rotations + land on winner
     const targetPos = startPos + 6 * totalH + distToWinner;
 
@@ -94,9 +94,35 @@ export const useSlotMachine = () => {
       setTimeout(() => setIsDuplicate(false), 400);
       return;
     }
-    setNames((prev) => [...prev, trimmed]);
+    const newNames = [...names, trimmed];
+    setNames(newNames);
     setInput('');
     if (winner) setWinner(null);
+
+    // 새 이름이 중앙에 오도록 1회전 프리뷰 롤 (isSpinning 변경 없음)
+    const newIdx = newNames.length - 1;
+    const totalH = newNames.length * REEL_ITEM_H;
+    const targetOffset = newIdx * REEL_ITEM_H;
+    const startPos = scrollPos;
+    const currentOffset = ((startPos % totalH) + totalH) % totalH;
+    const dist = (targetOffset - currentOffset + totalH) % totalH;
+    const targetPos = startPos + totalH + dist;
+    const startTs = performance.now();
+    const DURATION = 550;
+
+    cancelAnimation();
+    const animate = (ts: number) => {
+      const t = Math.min((ts - startTs) / DURATION, 1);
+      const eased = 1 - Math.pow(1 - t, 4);
+      setScrollPos(startPos + (targetPos - startPos) * eased);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        setScrollPos(((targetPos % totalH) + totalH) % totalH);
+        rafRef.current = null;
+      }
+    };
+    rafRef.current = requestAnimationFrame(animate);
   };
 
   const removeName = (name: string) => {
